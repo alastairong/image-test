@@ -1,9 +1,9 @@
-use image::{GenericImageView, ImageBuffer, Rgba};
+use image::{GenericImageView, ImageBuffer, Rgba, ImageOutputFormat};
 use rand::Rng;
 use imageproc::drawing::draw_text_mut;
 use rusttype::{Font, Scale};
-use std::fs;
-use std::path::Path;
+use base64;
+use std::io::Cursor;
 
 pub struct PixelStruct {
     x: u32,
@@ -38,14 +38,14 @@ fn main() {
 
     output.save("test.png").unwrap();
 
-    let image = output.into_raw();
-    let path: &Path = Path::new("./file");
-
-    let img_base64 = base64::encode(&image);
-    println!("{}", img_base64);
+    let mut buf = Vec::new();
+    output.write_to(&mut Cursor::new(&mut buf), ImageOutputFormat::Png)
+        .unwrap();
+    let mut img_base64 = base64::encode(&buf);
     
-    fs::write(path, image).unwrap();
+    img_base64 = format!("data:image/png;base64,{}", img_base64);
 
+    println!("{}", img_base64);
     
 }
 
